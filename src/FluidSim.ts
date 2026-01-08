@@ -73,6 +73,20 @@ export class FluidSim {
     this.initParticles();
   }
 
+  reset() {
+    this.u.fill(0);
+    this.v.fill(0);
+    this.uWeight.fill(0);
+    this.vWeight.fill(0);
+    this.uNew.fill(0);
+    this.vNew.fill(0);
+    this.du.fill(0);
+    this.dv.fill(0);
+    this.pDensity.fill(0);
+    // cellType doesn't need reset as walls don't move
+    this.initParticles();
+  }
+
   initGrid() {
     for (let i = 0; i < this.fNumX; i++) {
       for (let j = 0; j < this.fNumY; j++) {
@@ -98,7 +112,7 @@ export class FluidSim {
     const startY = this.fNumY * 0.2 * this.h;
     const height = this.fNumY * 0.6 * this.h;
 
-    const particleSpacing = this.h / 1.5;
+    const particleSpacing = this.h;
 
     for (let x = startX; x < startX + width; x += particleSpacing) {
       for (let y = startY; y < startY + height; y += particleSpacing) {
@@ -204,8 +218,8 @@ export class FluidSim {
 
     // Resolve Collisions - Stabilized
     // Use 2 iterations of softer force (0.5) instead of 1 hard iteration (1.0) to prevent jitter/pulsing.
-    // Increased check radius slightly to (spacing / 1.8)
-    const radius = this.h / 1.8;
+    // Increased check radius to create space between particles
+    const radius = this.h;
     const radiusSq = radius * radius;
 
     for (let iter = 0; iter < 2; iter++) {
