@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
-import { Droplets, Wind, Layers, ArrowRight, Github } from "lucide-react";
+import {
+  Droplets,
+  Wind,
+  Layers,
+  ArrowRight,
+  Github,
+  Anchor,
+} from "lucide-react";
 
 export default function LandingPage() {
   const simulations = [
@@ -11,6 +18,16 @@ export default function LandingPage() {
       icon: <Droplets className="w-12 h-12 text-blue-500" />,
       color: "bg-blue-50",
       link: "/fluid",
+      status: "active",
+    },
+    {
+      id: "boat",
+      title: "Boat & Waves",
+      description:
+        "Large scale wave simulation with buoyant rigid body boat physics.",
+      icon: <Anchor className="w-12 h-12 text-blue-700" />,
+      color: "bg-indigo-50",
+      link: "/boat",
       status: "active",
     },
     {

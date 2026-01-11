@@ -37,7 +37,8 @@ export default function SandSimulation() {
     const height = 600;
 
     // Cell size for pixels (sand grains)
-    const cellSize = 4;
+    // Optimization: Increased from 4 to 6 for significantly better performance (fewer cells)
+    const cellSize = 6;
 
     // Initialize Simulation
     const sim = new SandSim(width, height, cellSize);
@@ -79,14 +80,14 @@ export default function SandSimulation() {
             else if (type === GrainType.WOOD)
               ctx.fillStyle = "#78350f"; // Brown
             else if (type === GrainType.FIRE)
-              ctx.fillStyle = `hsl(${
-                0 + Math.random() * 40
-              }, 100%, 50%)`; // Fire
+              ctx.fillStyle = `hsl(${0 + Math.random() * 40}, 100%, 50%)`;
+            // Fire
             else if (type === GrainType.SMOKE)
               ctx.fillStyle = `rgba(150, 150, 150, ${Math.min(
                 1,
                 sim.life[idx] / 50
-              )})`; // Smoke
+              )})`;
+            // Smoke
             else if (type === GrainType.ACID) ctx.fillStyle = "#a3e635"; // Lime Acid
 
             ctx.fillRect(px, py, cellSize, cellSize);

@@ -158,8 +158,8 @@ export class WindSim {
     const end = this.size - 1;
 
     // Gauss-Seidel relaxation
-    // 4 to 20 iterations
-    for (let k = 0; k < 10; k++) {
+    // Optimization: Reduced iterations from 10 to 4 for performance
+    for (let k = 0; k < 4; k++) {
       for (let j = start; j < end; j++) {
         for (let i = start; i < end; i++) {
           const idx = this.IX(i, j);
@@ -217,7 +217,8 @@ export class WindSim {
     // Let's stick to 4.
 
     // Re-run solver with correct coeff
-    for (let k = 0; k < 20; k++) {
+    // Optimization: Reduced iterations from 20 to 8
+    for (let k = 0; k < 8; k++) {
       for (let j = start; j < end; j++) {
         for (let i = start; i < end; i++) {
           const idx = this.IX(i, j);

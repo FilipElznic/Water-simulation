@@ -27,7 +27,8 @@ export default function WindSimulation() {
 
     // Grid Setup
     // Use a coarser grid for performance
-    const gridSize = 100; // 100x100 cells
+    // Optimization: Reduced grid resolution from 100 to 80
+    const gridSize = 80; // 80x80 cells
     const sim = new WindSim(gridSize, 0.0001, 0.0, 0.1);
     simRef.current = sim;
 

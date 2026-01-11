@@ -1,10 +1,10 @@
 // src/FluidSim.ts
 
-export enum CellType {
-  FLUID = 0,
-  AIR = 1,
-  SOLID = 2,
-}
+export const CellType = {
+  FLUID: 0,
+  AIR: 1,
+  SOLID: 2,
+} as const;
 
 export class Particle {
   x: number;
@@ -46,6 +46,9 @@ export class FluidSim {
   cellType: Int8Array;
 
   particles: Particle[] = [];
+
+  // Wave generator
+  totalTime: number = 0;
 
   constructor(width: number, height: number, spacing: number) {
     this.h = spacing;
@@ -107,16 +110,28 @@ export class FluidSim {
 
   initParticles() {
     this.particles = [];
-    const startX = this.fNumX * 0.3 * this.h;
-    const width = this.fNumX * 0.4 * this.h;
-    const startY = this.fNumY * 0.2 * this.h;
-    const height = this.fNumY * 0.6 * this.h;
 
-    const particleSpacing = this.h;
+    // NEW: Initialize as a hydrostatic block at the bottom
+    // Full width (minus padding)
+    const startX = this.h * 2;
+    const width = (this.fNumX - 4) * this.h;
+
+    // Fill bottom 40% of the container
+    const fillPercent = 0.4;
+    const height = (this.fNumY - 2) * this.h * fillPercent;
+
+    const maxH = (this.fNumY - 1) * this.h;
+    const startY = maxH - height;
+
+    // Fix drift: More uniform density (2x2 per cell = 0.5h spacing)
+    // Reduce particle count to ~1/3 (0.55 -> 0.85) to improve performance
+    const particleSpacing = this.h * 0.85;
 
     for (let x = startX; x < startX + width; x += particleSpacing) {
-      for (let y = startY; y < startY + height; y += particleSpacing) {
-        this.particles.push(new Particle(x, y));
+      for (let y = startY; y < maxH; y += particleSpacing) {
+        // Add random jitter to prevent stacking artifacts/grid alignment bias
+        const jitter = (Math.random() - 0.5) * (this.h * 0.1);
+        this.particles.push(new Particle(x + jitter, y + jitter));
       }
     }
   }
@@ -134,11 +149,33 @@ export class FluidSim {
 
   integrate(dt: number) {
     // 1. Advect (Gravity + Move + Separation + Wall Clamp)
+    this.totalTime += dt;
     this.advectParticles(dt);
 
     // 2. Transfer Particles -> Grid
     this.transferParticlesToGrid();
     this.calculateParticleDensity();
+
+    // Wave Generator: Force velocity at the left boundary (Piston)
+    // Applies a sine wave to the u-velocity components near the left wall.
+    // Limit height to bottom half to simulate a paddle.
+    const waveAmp = 400.0; // Stronger push
+    const waveFreq = 1.0; // Lower frequency = Longer waves that travel further
+    const paddleHeight = this.fNumY * 0.7; // Slightly deeper paddle
+
+    const uForce = waveAmp * Math.sin(this.totalTime * waveFreq);
+
+    // Apply near i=1 (left boundary fluid)
+    for (let j = 1; j < paddleHeight; j++) {
+      // index for u at (1, j) which is the left-most fluid face
+      // (0, j) is the solid wall face
+      const idx = 1 + j * (this.fNumX + 1);
+      this.u[idx] = uForce;
+
+      // Ensure the wall condition doesn't override this immediately in solve?
+      // The solver respects current velocities as starting guess, but we need to enforce potential boundary?
+      // Actually, just setting it here provides the 'divergence' source for the solver.
+    }
 
     // 3. Save old grid for FLIP difference
     this.du.set(this.u);
@@ -222,7 +259,8 @@ export class FluidSim {
     const radius = this.h;
     const radiusSq = radius * radius;
 
-    for (let iter = 0; iter < 2; iter++) {
+    // Optimization: Reduced iterations from 2 to 1
+    for (let iter = 0; iter < 1; iter++) {
       for (let i = 0; i < this.particles.length; i++) {
         const p = this.particles[i];
         const cx = Math.floor(p.x * invH);
@@ -347,7 +385,7 @@ export class FluidSim {
   }
 
   solveIncompressibility() {
-    const numIters = 20; // Optimization: Reduced from 100 to allow more sub-steps
+    const numIters = 30; // Optimization: Reduced from 50 (still good stability)
     const cp = this.overRelaxation; // Now correctly defined!
 
     // Density correction parameters

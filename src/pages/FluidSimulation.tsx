@@ -27,7 +27,9 @@ export default function FluidSimulation() {
     const height = canvas.height;
 
     // Grid cell size (h)
-    const spacing = 10.0;
+    // Optimization: Increased spatial step (10 -> 20) to significantly reduce cell/particle count for performance
+    // Adjusted: Lowered to 13.0 for better visual quality (smaller balls, higher res) while maintaining acceptable performance
+    const spacing = 13.0;
 
     // Initialize Simulation
     const sim = new FluidSim(width, height, spacing);
@@ -79,9 +81,8 @@ export default function FluidSimulation() {
       }
 
       // 3. Visual Polish (Color by Velocity)
-      // 1. The "Gap" (Visual vs. Physical Radius)
-      // Physical spacing is 10. Visual radius should be smaller to see gaps.
-      const visualRadius = Math.max(spacing / 2.0 - 1.5, 2.0);
+      // Visual Radius: Increased to fill gaps since we lowered particle density
+      const visualRadius = spacing * 0.55;
 
       for (let i = 0; i < sim.particles.length; i++) {
         const p = sim.particles[i];
