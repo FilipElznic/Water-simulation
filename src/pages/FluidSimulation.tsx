@@ -46,24 +46,41 @@ export default function FluidSimulation() {
     const width = 800; // Fixed resolution for simulation consistency
     const height = 600;
 
-    // Grid cell size (h)
-    const spacing = 13.0;
+    // Optimization: Increased spatial step to reduce particle count
+    // 13.0 -> 18.0 (Significant performance boost)
+    const spacing = 18.0;
 
     // Initialize Simulation
     const sim = new FluidSim(width, height, spacing);
-    sim.gravity = paramsRef.current.gravity; // Set initial gravity
+    sim.gravity = paramsRef.current.gravity;
     simRef.current = sim;
 
-    const dt = 1.0 / 10.0; // Use original time step logic
+    // Time Step
+    // dt = 1/60 gives real-time speed. 1/30 gives slight fast-forward for fluid effect.
+    const dt = 1.0 / 40.0;
+
+    // 5 Colors for batch rendering (Dark Blue -> Light Cyan)
+    const COLORS = [
+      "rgb(30, 144, 255)", // Deep Blue
+      "rgb(78, 171, 255)",
+      "rgb(127, 199, 255)",
+      "rgb(175, 227, 255)",
+      "rgb(224, 255, 255)", // White/Cyan
+    ];
 
     // Animation Loop
     let animId: number;
+
+    // Reusable buckets to avoid GC
+    const buckets: FluidSim["particles"][] = [[], [], [], [], []];
+
     const render = () => {
       // 1. Time Step
-      const subSteps = 10;
+      // Lower substeps from 10 to 5 for performance
+      const subSteps = 5;
       const subDt = dt / subSteps;
 
-      // Update gravity from controls every frame just in case
+      // Update gravity
       sim.gravity = paramsRef.current.gravity;
 
       for (let i = 0; i < subSteps; i++) {
@@ -97,26 +114,40 @@ export default function FluidSimulation() {
         }
       }
 
-      // Draw Particles
+      // Draw Particles (Batched)
       const visualRadius = spacing * paramsRef.current.visualSize;
 
+      // 1. Clear buckets
+      for (let i = 0; i < 5; i++) buckets[i].length = 0;
+
+      // 2. Sort particles into buckets
       for (let i = 0; i < sim.particles.length; i++) {
         const p = sim.particles[i];
-
-        // Skip invalid particles
-        if (isNaN(p.x) || isNaN(p.y)) continue;
+        if (isNaN(p.x)) continue;
 
         const speed = Math.sqrt(p.u * p.u + p.v * p.v);
-        const t = Math.min(speed / 800.0, 1.0);
+        // Map speed 0..800 to bucket 0..4
+        let bIdx = Math.floor((speed / 800.0) * 5);
+        if (bIdx > 4) bIdx = 4;
 
-        // Interpolate colors: Dark Blue -> Light Cyan
-        const r = Math.floor(30 + (224 - 30) * t);
-        const g = Math.floor(144 + (255 - 144) * t);
-        const b = Math.floor(255 + (255 - 255) * t);
+        buckets[bIdx].push(p);
+      }
 
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      // 3. Draw each bucket
+      for (let i = 0; i < 5; i++) {
+        if (buckets[i].length === 0) continue;
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, visualRadius, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS[i];
+
+        const pi2 = Math.PI * 2;
+        const bucket = buckets[i];
+
+        for (let j = 0; j < bucket.length; j++) {
+          const p = bucket[j];
+          ctx.moveTo(p.x + visualRadius, p.y);
+          ctx.arc(p.x, p.y, visualRadius, 0, pi2);
+        }
         ctx.fill();
       }
 
