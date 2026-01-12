@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Droplets, Wind, Layers, Github } from "lucide-react";
+import { Droplets, Wind, Layers, Github, Gamepad2 } from "lucide-react";
 import SimulationInfo from "../components/SimulationInfo";
 
 export default function LandingPage() {
@@ -33,6 +33,16 @@ export default function LandingPage() {
       link: "/wind",
       status: "active",
       rotation: "-rotate-2",
+    },
+    {
+      id: "game",
+      title: "Water Maze",
+      description:
+        "Puzzle game: Guide the water through the maze by opening doors to fill the bucket.",
+      icon: <Gamepad2 className="w-10 h-10 text-emerald-600" />,
+      link: "/game",
+      status: "active",
+      rotation: "rotate-2",
     },
   ];
 

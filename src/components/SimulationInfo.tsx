@@ -34,10 +34,6 @@ const SimulationInfo: React.FC = () => {
             Mathematical Models
           </h1>
           <div className="w-24 h-1 bg-ink/10 mx-auto rounded-full"></div>
-          <p className="mt-2 text-ink/60 italic text-sm">
-            "Mathematics is the language in which God has written the universe."
-            - Galileo
-          </p>
         </div>
         {/* Decorative background elements behind the title */}
         <div className="absolute top-0 right-0 w-24 h-24 bg-ocean/5 rounded-full blur-xl -z-10 translate-x-1/2 -translate-y-1/2"></div>
@@ -168,6 +164,30 @@ const SimulationInfo: React.FC = () => {
             <span className="font-hand font-bold text-ink/40 text-xs uppercase">
               Approved
             </span>
+          </div>
+        </PaperSection>
+
+        {/* Water Maze Logic */}
+        <PaperSection title="Water Logic" number="#4" rotation="-rotate-1">
+          <p className="mb-4">Cellular Automata Update Rule:</p>
+          <div className="pl-4 border-l-2 border-ocean/20 space-y-6">
+            <div>
+              <p className="mb-2 text-sm">
+                State <InlineMath math="S" /> update for particle at{" "}
+                <InlineMath math="(x,y)" />:
+              </p>
+              <div className="my-2 bg-slate-50 p-3 rounded-sm border border-slate-200 shadow-inner overflow-x-auto text-xs">
+                <BlockMath
+                  math={
+                    "S_{(x,y)}^{t+1} = \\begin{cases} (x, y+1) & \\text{if } \\emptyset_{(x,y+1)} \\\\ (x \\pm 1, y+1) & \\text{if } \\emptyset_{(x \\pm 1, y+1)} \\\\ (x \\pm 1, y) & \\text{if } \\emptyset_{(x \\pm 1, y)} \\end{cases}"
+                  }
+                />
+              </div>
+              <p className="text-xs text-ink/60 italic mt-2">
+                Prioritizes: Down <InlineMath math="\rightarrow" /> Diagonal{" "}
+                <InlineMath math="\rightarrow" /> Side
+              </p>
+            </div>
           </div>
         </PaperSection>
       </div>

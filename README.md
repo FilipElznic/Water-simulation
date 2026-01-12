@@ -1,75 +1,102 @@
-# React + TypeScript + Vite
+# Physics Playbook
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A collection of interactive physics simulations and games, presented in a delightful "hand-drawn lab notebook" aesthetic. This project allows users to explore various physical phenomena directly in the browser through interactive canvases.
 
-Currently, two official plugins are available:
+## 🧪 Experiments & Simulations
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The project currently features the following active experiments:
 
-## React Compiler
+- **Water Experiment (Fluid Dynamics)**
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+  - Analysis of fluid dynamics using a FLIP (Fluid Implicit Particle) / PIC (Particle In Cell) hybrid solver.
+  - Features adjustable gravity interactively.
+  - Real-time fluid interactions with mouse control.
 
-Note: This will impact Vite dev & build performances.
+- **Granular Matter (Sand Simulation)**
 
-## Expanding the ESLint configuration
+  - Cellular automata simulation demonstrating the behavior of falling sand particles.
+  - Observe distinctive accumulation patterns and pile formation.
+  - Interactive drawing of sand and rigid walls.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Aerodynamics (Wind Tunnel)**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+  - Wind tunnel visualization using Lattice Boltzmann methods (or similar fluid flow approximation) for smoke/air.
+  - Visualize flow patterns over various 2D geometries like airfoils or custom obstacles.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Hydro-Logic Puzzle (Water Maze)**
+  - A logic puzzle game based on fluid mechanics.
+  - **Objective:** Guide water through a maze by toggling doors to fill a bucket.
+  - Features multiple levels and a clear win state.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🎨 Visual Style
+
+The application features a unique visual design:
+
+- **Hand-Drawn Aesthetic:** Elements look like sketches on paper.
+- **Lab Notebook Feel:** Backgrounds use parchment textures, and fonts mimic handwriting and typewriter text (`Courier Prime`, `Patrick Hand`).
+- **Tactile UI:** Buttons look like taped sketches, and panels resemble sticky notes or pinned papers.
+
+## 🛠️ Tech Stack
+
+- **Framework:** [React v19](https://react.dev/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Formatting/Linting:** ESLint, Prettier
+- **Math:** KaTeX (for formula rendering)
+- **Icons:** Lucide React
+
+## 🚀 Getting Started
+
+Follow these steps to run the simulation lab locally:
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/FilipElznic/Water-simulation.git
+    cd Water-simulation
+    ```
+
+2.  **Install dependencies:**
+
+    ```bash
+    npm install
+    ```
+
+3.  **Start the development server:**
+
+    ```bash
+    npm run dev
+    ```
+
+4.  **Open in Browser:**
+    Navigate to `http://localhost:5173` (or the URL shown in your terminal).
+
+## 📁 Project Structure
+
+```
+src/
+├── assets/          # Static assets (images, etc.)
+├── components/      # Reusable React components
+├── pages/           # Application views
+│   ├── LandingPage.tsx   # Main menu
+│   ├── FluidSimulation.tsx
+│   ├── FoodSimulation.tsx
+│   ├── SandSimulation.tsx
+│   └── WaterFlowGame.tsx
+├── BoatSim.ts       # Physics engine classes
+├── FluidSim.ts
+├── SandSim.ts
+├── WaterMazeSim.ts
+├── WindSim.ts
+├── App.tsx          # Main router
+└── main.tsx         # Entry point
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📜 License
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project is open source. Feel free to explore, learn, and experiment!
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+_"The noblest pleasure is the joy of understanding."_ - Leonardo da Vinci
