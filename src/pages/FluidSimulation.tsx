@@ -1,11 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw, Settings2, Droplets } from "lucide-react";
 import { FluidSim } from "../FluidSim";
 
 export default function FluidSimulation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const simRef = useRef<FluidSim | null>(null);
+
+  // Simulation Parameters State
+  const [gravity, setGravity] = useState(2500);
+  const [visualSize, setVisualSize] = useState(0.55); // Multiplier of spacing (0.1 to 1.0)
+  const [resetCounter, setResetCounter] = useState(0); // Trigger re-init
 
   // Mouse State
   const mouseRef = useRef({
@@ -16,6 +21,21 @@ export default function FluidSimulation() {
     prevY: 0,
   });
 
+  // Parameter Ref for animation loop
+  const paramsRef = useRef({
+    gravity: 2500,
+    visualSize: 0.55,
+  });
+
+  // Sync state with refs
+  useEffect(() => {
+    paramsRef.current.gravity = gravity;
+    paramsRef.current.visualSize = visualSize;
+    if (simRef.current) {
+      simRef.current.gravity = gravity;
+    }
+  }, [gravity, visualSize]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -23,105 +43,92 @@ export default function FluidSimulation() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const width = canvas.width;
-    const height = canvas.height;
+    const width = 800; // Fixed resolution for simulation consistency
+    const height = 600;
 
     // Grid cell size (h)
-    // Optimization: Increased spatial step (10 -> 20) to significantly reduce cell/particle count for performance
-    // Adjusted: Lowered to 13.0 for better visual quality (smaller balls, higher res) while maintaining acceptable performance
     const spacing = 13.0;
 
     // Initialize Simulation
     const sim = new FluidSim(width, height, spacing);
+    sim.gravity = paramsRef.current.gravity; // Set initial gravity
     simRef.current = sim;
 
-    const dt = 1.0 / 10.0; // Standard 60 FPS update
+    const dt = 1.0 / 10.0; // Use original time step logic
 
+    // Animation Loop
+    let animId: number;
     const render = () => {
-      // 1. Time Step & Sub-stepping (Accelerated)
-      // dt = 1/20 gives 3x "fast forward" speed (vs 1/60)
-      // subSteps = 10 ensures stability (subDt small enough)
+      // 1. Time Step
       const subSteps = 10;
-      const subDt = dt / subSteps; // Real-time speed (1/60th second processed per frame)
-      // To speed up: increase dt or loop subSteps more times relative to 1/60
+      const subDt = dt / subSteps;
+
+      // Update gravity from controls every frame just in case
+      sim.gravity = paramsRef.current.gravity;
 
       for (let i = 0; i < subSteps; i++) {
         sim.integrate(subDt);
       }
 
-      // Handle Mouse Interaction (Splash)
+      // Handle Mouse Interaction
       if (mouseRef.current.isDown) {
         const { x, y, prevX, prevY } = mouseRef.current;
-        // Calculate mouse velocity (delta)
-        const vx = (x - prevX) * 5.0; // Boost strength
+        const vx = (x - prevX) * 5.0;
         const vy = (y - prevY) * 5.0;
+        sim.addExternalForce(x, y, vx, vy, 50.0);
 
-        sim.addExternalForce(x, y, vx, vy, 50.0); // 50px radius
-
-        // Update prev to current
         mouseRef.current.prevX = x;
         mouseRef.current.prevY = y;
       }
 
       // Clear Screen
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#f3f4f6"; // Gray-100
+      ctx.fillStyle = "#fafaf9"; // stone-50
       ctx.fillRect(0, 0, width, height);
 
-      // Draw Walls (Solid Cells)
-      ctx.fillStyle = "#9ca3af"; // Gray-400
+      // Draw Walls
+      ctx.fillStyle = "#d6d3d1"; // stone-300
       for (let i = 0; i < sim.fNumX; i++) {
         for (let j = 0; j < sim.fNumY; j++) {
           const idx = sim.getCellIndex(i, j);
           if (sim.cellType[idx] === 2) {
-            // SOLID
             ctx.fillRect(i * spacing, j * spacing, spacing, spacing);
           }
         }
       }
 
-      // 3. Visual Polish (Color by Velocity)
-      // Visual Radius: Increased to fill gaps since we lowered particle density
-      const visualRadius = spacing * 0.55;
+      // Draw Particles
+      const visualRadius = spacing * paramsRef.current.visualSize;
 
       for (let i = 0; i < sim.particles.length; i++) {
         const p = sim.particles[i];
 
-        // Safety Check (Debugging)
-        if (isNaN(p.x) || isNaN(p.y)) {
-          console.warn("NaN detected! Resetting simulation...");
-          sim.reset();
-          return; // Exit render loop for this frame
-        }
+        // Skip invalid particles
+        if (isNaN(p.x) || isNaN(p.y)) continue;
 
-        // Calculate speed (magnitude of velocity)
         const speed = Math.sqrt(p.u * p.u + p.v * p.v);
-        // Map speed to color (0 to ~800 px/s)
         const t = Math.min(speed / 800.0, 1.0);
 
-        // Interpolate between Dark Blue (#1E90FF) and Light/White (#E0FFFF)
+        // Interpolate colors: Dark Blue -> Light Cyan
         const r = Math.floor(30 + (224 - 30) * t);
         const g = Math.floor(144 + (255 - 144) * t);
         const b = Math.floor(255 + (255 - 255) * t);
 
-        const color = `rgb(${r}, ${g}, ${b})`;
-        ctx.fillStyle = color;
-
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         ctx.beginPath();
-        // Visual Radius
         ctx.arc(p.x, p.y, visualRadius, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      requestAnimationFrame(render);
+      animId = requestAnimationFrame(render);
     };
 
-    const animId = requestAnimationFrame(render);
+    render();
 
     return () => cancelAnimationFrame(animId);
-  }, []);
+  }, [resetCounter]);
 
-  // Mouse Event Handlers
+  // Mouse Handlers
   const handleMouseMove = (e: React.MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -143,7 +150,7 @@ export default function FluidSimulation() {
 
   const handleMouseDown = (e: React.MouseEvent) => {
     mouseRef.current.isDown = true;
-    handleMouseMove(e); // Update position immediately
+    handleMouseMove(e);
     mouseRef.current.prevX = mouseRef.current.x;
     mouseRef.current.prevY = mouseRef.current.y;
   };
@@ -152,53 +159,120 @@ export default function FluidSimulation() {
     mouseRef.current.isDown = false;
   };
 
-  const handleReset = () => {
-    if (simRef.current) {
-      simRef.current.reset();
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8">
+    <div className="min-h-screen bg-parchment-dark/20 relative overflow-x-hidden font-mono text-ink selection:bg-ocean/20">
+      {/* Background Pattern Overlay */}
+      <div className="absolute inset-0 opacity-50 pointer-events-none"></div>
+
       {/* Header */}
-      <div className="w-full max-w-4xl px-4 flex items-center justify-between mb-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <Link
           to="/"
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-2 group text-ink/70 hover:text-ink transition-colors"
         >
-          <ArrowLeft size={20} />
-          <span className="font-medium">Back to Home</span>
+          <div className="bg-white p-2 rounded-full shadow-sm group-hover:shadow-md transition-all border border-ink/5">
+            <ArrowLeft size={20} />
+          </div>
+          <span className="font-hand font-bold text-lg">Back to Lab</span>
         </Link>
+
+        <h1 className="hidden md:block text-2xl font-hand font-bold text-ink/80">
+          Fluid Dynamics Experiment
+        </h1>
+
         <button
-          onClick={handleReset}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          onClick={() => setResetCounter((c) => c + 1)}
+          className="sketch-btn flex items-center gap-2 text-ink"
         >
           <RefreshCw size={18} />
-          <span>Reset Simulation</span>
+          <span>Reset Tank</span>
         </button>
       </div>
 
-      <div className="bg-white p-2 rounded-xl shadow-2xl border border-gray-200">
-        <canvas
-          ref={canvasRef}
-          width={800}
-          height={600}
-          className="border border-gray-100 rounded-lg cursor-crosshair active:cursor-grabbing"
-          onMouseMove={handleMouseMove}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        />
-      </div>
+      {/* Main Workspace */}
+      <div className="relative z-10 flex flex-col xl:flex-row justify-center items-start gap-8 p-4 md:p-8 max-w-7xl mx-auto">
+        {/* Simulation Canvas */}
+        <div className="relative">
+          {/* Paper Container */}
+          <div className="sketch-border bg-white p-4 shadow-paper transform rotate-1 relative z-10">
+            {/* Tape */}
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-blue-100/30 backdrop-blur-sm border border-white/20 transform -rotate-1 shadow-sm z-20"></div>
 
-      <div className="mt-6 max-w-2xl text-center">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
-          FLIP/PIC Hybrid Water Solver
-        </h2>
-        <p className="text-gray-600">
-          Interactive fluid simulation running entirely in your browser. Drag
-          your mouse through the water to create splashes!
-        </p>
+            <canvas
+              ref={canvasRef}
+              width={800}
+              height={600}
+              className="w-full max-w-[800px] border-2 border-ink/5 rounded-sm bg-stone-50 cursor-crosshair active:cursor-grabbing"
+              onMouseMove={handleMouseMove}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            />
+          </div>
+        </div>
+
+        {/* Sticky Note Controls */}
+        <div className="paper-note bg-[#fff7d1] p-6 w-full max-w-md xl:w-80 transform -rotate-1 relative mt-8 xl:mt-0">
+          {/* Pushpin */}
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-red-800 shadow-md z-20 border border-white/30 hidden md:block"></div>
+
+          <div className="flex items-center gap-2 mb-4 border-b border-ink/10 pb-2">
+            <Settings2 size={20} className="text-ink/60" />
+            <h3 className="font-hand font-bold text-xl text-ink">
+              Lab Controls
+            </h3>
+          </div>
+
+          <div className="space-y-6">
+            {/* Gravity Control */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-sm font-bold text-ink/70 flex items-center gap-2">
+                  Gravity
+                </label>
+                <span className="text-xs font-mono bg-white px-1 rounded text-ink/60">
+                  {gravity}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="5000"
+                step="100"
+                value={gravity}
+                onChange={(e) => setGravity(Number(e.target.value))}
+                className="w-full accent-ocean cursor-pointer"
+              />
+            </div>
+
+            {/* Particle Size Control */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-sm font-bold text-ink/70 flex items-center gap-2">
+                  <Droplets size={14} />
+                  Droplet Size
+                </label>
+                <span className="text-xs font-mono bg-white px-1 rounded text-ink/60">
+                  {Math.round(visualSize * 100)}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0.2"
+                max="1.5"
+                step="0.05"
+                value={visualSize}
+                onChange={(e) => setVisualSize(Number(e.target.value))}
+                className="w-full accent-ocean cursor-pointer"
+              />
+            </div>
+
+            <div className="bg-white/50 p-3 rounded text-xs text-ink/60 italic font-hand leading-relaxed">
+              Adjust the slider to change droplet size. Higher gravity makes
+              water heavier.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

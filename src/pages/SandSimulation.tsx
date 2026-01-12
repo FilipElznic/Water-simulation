@@ -176,63 +176,116 @@ export default function SandSimulation() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8">
-      {/* Header */}
-      <div className="w-full max-w-5xl px-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-        <Link
-          to="/"
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft size={20} />
-          <span className="font-medium">Back</span>
-        </Link>
+    <div className="min-h-screen py-8 px-4 font-mono overflow-y-auto max-h-screen">
+      <div className="max-w-6xl mx-auto flex flex-col items-center gap-8 pb-20">
+        {/* Header */}
+        <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
+          <Link
+            to="/"
+            className="sketch-btn flex items-center gap-2 text-ink group"
+          >
+            <ArrowLeft
+              size={20}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
+            <span className="font-hand text-xl font-bold">Back to Index</span>
+          </Link>
 
-        <div className="flex flex-wrap justify-center gap-2">
+          <div className="text-center relative">
+            <h1 className="text-5xl font-hand font-bold text-ink transform rotate-1">
+              Granular Matter
+            </h1>
+            <div className="w-32 h-1 bg-ink/10 mx-auto rounded-full mt-2"></div>
+          </div>
+
+          <button
+            onClick={handleReset}
+            className="sketch-btn flex items-center gap-2 text-ink bg-white/50"
+          >
+            <RefreshCw size={18} />
+            <span className="font-hand font-bold text-lg">Reset Box</span>
+          </button>
+        </div>
+
+        {/* Controls */}
+        <div className="glass-panel p-4 flex flex-wrap justify-center gap-3 w-full max-w-4xl transform -rotate-1 relative z-20">
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs font-hand text-ink/40 bg-[#f2e8d5] px-2">
+            Select Element
+          </div>
           {buttons.map((btn) => (
             <button
               key={btn.id}
               onClick={() => setSelectedType(btn.id)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all shadow-sm border ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-sm font-hand font-bold text-lg transition-all border-2 ${
                 selectedType === btn.id
-                  ? btn.color + " ring-2 ring-offset-1 ring-blue-400"
-                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  ? "bg-white border-ink shadow-sm transform -translate-y-1"
+                  : "bg-transparent border-transparent hover:bg-white/30 text-ink/60 hover:text-ink"
               }`}
             >
-              {btn.icon}
+              <span
+                className={selectedType === btn.id ? "text-ink" : "opacity-50"}
+              >
+                {btn.icon}
+              </span>
               <span>{btn.label}</span>
             </button>
           ))}
         </div>
 
-        <button
-          onClick={handleReset}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors shadow-sm"
-        >
-          <RefreshCw size={18} />
-          <span>Reset</span>
-        </button>
-      </div>
+        {/* Canvas Area */}
+        <div className="relative group flex flex-col xl:flex-row gap-8 items-start">
+          <div className="relative">
+            <div className="sketch-border bg-white p-2 md:p-4 shadow-paper transform rotate-1 relative z-10">
+              {/* Pin effect */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-red-800 shadow-md z-20 border border-white/30"></div>
 
-      <div className="bg-white p-2 rounded-xl shadow-2xl border border-gray-200">
-        <canvas
-          ref={canvasRef}
-          width={800}
-          height={600}
-          className="border border-gray-100 rounded-lg cursor-crosshair active:cursor-grabbing bg-gray-900"
-          onMouseMove={handleMouseMove}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        />
-      </div>
+              <canvas
+                ref={canvasRef}
+                width={800}
+                height={600}
+                className="border-2 border-ink/10 cursor-crosshair active:cursor-grabbing bg-[#1a1a1a] rounded-sm shadow-inner w-full max-w-[800px]"
+                onMouseMove={handleMouseMove}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              />
+            </div>
+            {/* Decorative tape */}
+            <div className="absolute -top-4 -right-4 w-24 h-8 bg-yellow-100/30 backdrop-blur-sm border border-white/20 transform rotate-45 shadow-sm z-20"></div>
+          </div>
 
-      <div className="mt-6 max-w-2xl text-center">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
-          Falling Sand Automata
-        </h2>
-        <p className="text-gray-600">
-          Try burning wood with fire, or melting stone with acid!
-        </p>
+          {/* Instructions Note */}
+          <div className="paper-note p-6 w-full xl:max-w-xs transform rotate-2 xl:mt-10 bg-[#fff9c4] relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-blue-800 shadow-md z-20 border border-white/30 block"></div>
+            <h3 className="font-hand font-bold text-xl mb-3 text-ink border-b border-ink/10 pb-1">
+              Field Guide
+            </h3>
+            <ul className="list-disc pl-4 space-y-2 text-sm text-ink/90 font-hand font-bold leading-relaxed">
+              <li>Select an element from the toolbar above.</li>
+              <li>Click & Drag on the black canvas to spawn particles.</li>
+              <li>
+                Observe distinct physical reactions (e.g., Fire burns Wood, Acid
+                dissolves Stone).
+              </li>
+              <li>
+                Use the 'Erase' tool to clear specific areas, or 'Reset Box' for
+                a blank slate.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Footer info */}
+        <div className="glass-panel p-6 max-w-2xl text-center transform -rotate-2">
+          <h2 className="text-2xl font-hand font-bold text-ink mb-2">
+            Falling Sand Automata
+          </h2>
+          <p className="text-ink/80 text-sm">
+            Try burning wood with fire, or melting stone with acid! The
+            simulation uses Cellular Automata rules to determine particle
+            interaction.
+          </p>
+        </div>
       </div>
     </div>
   );

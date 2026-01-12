@@ -1,1 +1,69 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    background-image: url("/bg.webp");
+    background-size: cover;
+    background-position: top;
+    background-attachment: local;
+    background-color: #f2e8d5; /* Fallback */
+    color: #2f3133;
+    font-family: "Courier Prime", monospace;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Patrick Hand", cursive;
+  }
+}
+
+@layer components {
+  .sketch-border {
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    border: 2px solid #2f3133;
+  }
+
+  .sketch-btn {
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    border: 2px solid #2f3133;
+    @apply px-6 py-2 transition-all duration-200;
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .sketch-btn:hover {
+    background-color: #fff;
+    box-shadow: 2px 3px 0px 0px rgba(47, 49, 51, 0.2);
+    transform: translateY(-1px) rotate(-0.5deg);
+  }
+
+  .glass-panel {
+    @apply backdrop-blur-sm border;
+    background-color: rgba(242, 232, 213, 0.85);
+    border-color: rgba(47, 49, 51, 0.1);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+  }
+
+  .paper-note {
+    background-color: #fff;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.1);
+    transform: rotate(var(--rotation, 0deg));
+  }
+}
+
+/* Custom Scrollbar for that vintage feel */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2f3133;
+  border-radius: 5px;
+  border: 2px solid #f2e8d5;
+}
