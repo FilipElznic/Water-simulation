@@ -9,7 +9,6 @@ import {
   HardDrive,
   Square,
   FlaskConical,
-  Cloud,
 } from "lucide-react";
 import { SandSim, GrainType } from "../SandSim";
 

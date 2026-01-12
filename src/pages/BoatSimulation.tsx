@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, RefreshCw, Anchor, Square } from "lucide-react";
+import { ArrowLeft, RefreshCw, Anchor } from "lucide-react";
 import { BoatSim } from "../BoatSim";
 
 export default function BoatSimulation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const simRef = useRef<BoatSim | null>(null);
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;

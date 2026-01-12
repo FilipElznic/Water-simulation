@@ -207,8 +207,6 @@ export class WaterMazeSim {
     }
 
     // 2. Fall diagonal
-    const leftIdx = idx - 1;
-    const rightIdx = idx + 1;
     const belowLeftIdx = belowIdx - 1;
     const belowRightIdx = belowIdx + 1;
 

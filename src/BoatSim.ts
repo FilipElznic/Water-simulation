@@ -154,17 +154,12 @@ export class BoatSim {
     // We'll sample 2 points (left and right of boat) to get torque and lift
 
     // Simplified boat shape for calculation driven by bounding box
-    const leftX = b.x - b.width / 2;
-    const rightX = b.x + b.width / 2;
     // Calculate rotated bottom corners positions?
     // For simplicity in this spring model, let's treat the boat as a collection of probe points along its bottom width.
 
     // Optimization: Reduced probes from 10 to 5. Sufficient for buoyancy.
     const numProbes = 5;
     const dx = b.width / numProbes;
-
-    let totalLift = 0;
-    let totalTorque = 0;
 
     // Get boat's bottom line in world space
     // Center (cx, cy) = (b.x, b.y)

@@ -4,7 +4,7 @@ export const CellType = {
   FLUID: 0,
   AIR: 1,
   SOLID: 2,
-} as const;
+};
 
 export class Particle {
   x: number;

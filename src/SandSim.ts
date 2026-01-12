@@ -220,7 +220,6 @@ export class SandSim {
     for (let nx = x - 1; nx <= x + 1; nx++) {
       for (let ny = y - 1; ny <= y + 1; ny++) {
         if (nx === x && ny === y) continue;
-        const nIdx = nx + ny * this.cols;
         const neighbor = this.getCell(nx, ny);
 
         if (neighbor === GrainType.WOOD) {

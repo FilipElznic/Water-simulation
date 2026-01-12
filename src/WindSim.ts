@@ -75,9 +75,7 @@ export class WindSim {
   // --- Step ---
 
   step() {
-    const N = this.size;
     const visc = this.visc;
-    const diff = this.diff;
     const dt = this.dt;
     const Vx = this.Vx;
     const Vy = this.Vy;
